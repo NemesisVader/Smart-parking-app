@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "parking-app",
+            "database": "${workspaceFolder:smart-parking-app}/instance/parking_slot.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
