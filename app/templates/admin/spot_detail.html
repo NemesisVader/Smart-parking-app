@@ -3,62 +3,76 @@
 
 {% block content %}
 <div class="container py-5">
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-4">
+      <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="#spotsModal-{{ lot.id }}" data-bs-toggle="modal">{{ lot.prime_location_name }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Spot {{ spot.spot_number }}</li>
+    </ol>
+  </nav>
+
   <!-- Spot Overview -->
-  <div class="mb-4">
-    <h2 class="mb-1">{{ lot.prime_location_name }}</h2>
-    <h4>
-      Spot #{{ spot.spot_number }} 
-      {% if spot.status == 'A' %}
-        <span class="badge bg-success">Available</span>
-      {% else %}
-        <span class="badge bg-danger">Reserved</span>
-      {% endif %}
-    </h4>
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2 class="mb-1">{{ lot.prime_location_name }}</h2>
+      <h4>
+        Spot #{{ spot.spot_number }}
+        {% if spot.status == 'A' %}
+          <span class="badge bg-success ms-2">Available</span>
+        {% else %}
+          <span class="badge bg-danger ms-2">Reserved</span>
+        {% endif %}
+      </h4>
+    </div>
   </div>
 
   <!-- Active Reservation -->
-  <div class="card mb-4">
+  <div class="card mb-5 shadow-sm">
     <div class="card-header bg-warning text-dark fw-semibold">
       Current Reservation
     </div>
     <div class="card-body">
       {% if active_res %}
-        <ul class="list-unstyled">
+        <ul class="list-unstyled mb-3">
           <li><strong>User:</strong> {{ active_res.user.email }}</li>
           <li><strong>From:</strong> {{ active_res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</li>
           {% if active_res.leaving_timestamp %}
             <li><strong>To:</strong> {{ active_res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}</li>
           {% endif %}
-          <li><strong>Cost:</strong> ₹{{ active_res.parking_cost }}</li>
-          <li><strong>Status:</strong> {{ active_res.status|capitalize }}</li>
+          <li><strong>Cost:</strong> ₹{{ "{:.2f}".format(active_res.parking_cost) }}</li>
+          <li><strong>Status:</strong> <span class="text-capitalize">{{ active_res.status }}</span></li>
         </ul>
-        <form method="POST" class="mt-3 d-flex gap-2">
-          <button type="submit" class="btn btn-danger">Release Spot</button>
-          <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+        <form method="POST" class="d-flex gap-2">
+          <button type="submit" class="btn btn-outline-danger">Release Spot</button>
+          <a href="{{ url_for('admin.dashboard') }}#spotsModal-{{ lot.id }}" class="btn btn-outline-secondary">Back to Lots</a>
         </form>
       {% else %}
         <p class="text-muted">No active reservation on this spot.</p>
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+        <a href="{{ url_for('admin.dashboard') }}#spotsModal-{{ lot.id }}" class="btn btn-outline-secondary">Back to Lots</a>
       {% endif %}
     </div>
   </div>
 
   <!-- Reservation History -->
-  <div class="card">
-    <div class="card-header bg-light fw-semibold">Reservation History</div>
+  <div class="card shadow-sm">
+    <div class="card-header bg-light fw-semibold">
+      Reservation History
+    </div>
     <div class="card-body">
       {% if past_res %}
         <ul class="list-group list-group-flush">
           {% for res in past_res %}
-            <li class="list-group-item">
-              <div class="fw-semibold">{{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
-              <small>
-                {{ res.user.email }} 
-                {% if res.leaving_timestamp %}
-                  to {{ res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
-                {% endif %} • {{ res.status|capitalize }}
-                — ₹{{ res.parking_cost or '—' }}
-              </small>
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-semibold">{{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
+                <small>
+                  {{ res.user.email }}
+                  {% if res.leaving_timestamp %}&nbsp;&rarr;&nbsp;{{ res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+                  • <span class="text-capitalize">{{ res.status }}</span>
+                </small>
+              </div>
+              <span class="badge bg-primary rounded-pill">₹{{ "{:.2f}".format(res.parking_cost or 0) }}</span>
             </li>
           {% endfor %}
         </ul>
