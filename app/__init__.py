@@ -1,14 +1,22 @@
 from flask import Flask, render_template, url_for, session
-from app.routes import route_handler, auth_bp
+import os
+from dotenv import load_dotenv
+from flask_wtf import CSRFProtect
+from app.routes import route_handler, auth_bp, admin_bp
 from app.config import Config
 from app.extensions import db, login_manager, migrate, bcrypt
 from app.models import *
 
+csrf = CSRFProtect()
+load_dotenv()
 
 def create_app():
     app = Flask(__name__, template_folder='templates', static_folder='static')
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')  # Needed for CSRF
+    csrf.init_app(app)
     app.config.from_object(Config) # Loads the settings (like SECRET_KEY and database URL) from the Config class in my config.py set FLASK_APP=run.py
     app.register_blueprint(auth_bp) # Register the authentication blueprint (handles login, register, logout routes)
+    app.register_blueprint(admin_bp) # Register the Admin Blueprint to load admin dashboard
     
     db.init_app(app) # Initialzes SQLAlchemy
     login_manager.init_app(app) # Initializes the LoginManager from flask_login

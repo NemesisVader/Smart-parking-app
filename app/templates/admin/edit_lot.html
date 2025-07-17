@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Edit Parking Lot{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow">
+        <div class="card-header text-white" style="background: linear-gradient(135deg, #00132e, #7d32f5);">
+          <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i> Edit Lot – {{ lot.prime_location_name }}</h4>
+        </div>
+        <div class="card-body">
+
+          {# Flash Messages #}
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, msg in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                  {{ msg }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <form method="POST" action="{{ url_for('admin.edit_lot', lot_id=lot.id) }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.prime_location_name.label(class="form-label fw-semibold text-primary") }}
+              {{ form.prime_location_name(class="form-control") }}
+            </div>
+
+            <div class="mb-3">
+              {{ form.price_per_hour.label(class="form-label fw-semibold text-primary") }}
+              {{ form.price_per_hour(class="form-control") }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-muted">Number of Spots</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                value="{{ lot.num_spots }}" 
+                readonly 
+                style="cursor: not-allowed; background-color: #f0f0f0;"
+              >
+            </div>
+
+            <div class="mb-3">
+              {{ form.address.label(class="form-label fw-semibold text-primary") }}
+              {{ form.address(class="form-control") }}
+            </div>
+
+            <div class="mb-3">
+              {{ form.pincode.label(class="form-label fw-semibold text-primary") }}
+              {{ form.pincode(class="form-control", type="text") }}
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-save me-1"></i> Save
+              </button>
+              <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
