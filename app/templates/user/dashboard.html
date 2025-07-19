@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-4">
+    <h2>Welcome, {{ user.name or user.email }}</h2>
+    <p class="text-muted">Find and reserve parking in seconds.</p>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <!-- Search -->
+      <form class="mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by name or location">
+      </form>
+      <div id="lotList" class="list-group">
+        <!-- Nearby lots will be injected here -->
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div id="map" style="height: 500px; width: 100%; border: 1px solid #ccc;"></div>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    {% if active_res %}
+      <div class="card border-success mb-3">
+        <div class="card-header bg-success text-white">Current Reservation</div>
+        <div class="card-body">
+          <p><strong>Lot:</strong> {{ active_res.spot.lot.prime_location_name }}</p>
+          <p><strong>Spot:</strong> #{{ active_res.spot.spot_number }}</p>
+          <p><strong>Start Time:</strong> {{ active_res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+          {% if active_res.leaving_timestamp %}
+            <p><strong>End Time:</strong> {{ active_res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+          {% endif %}
+          <p><strong>Cost:</strong> ₹{{ active_res.parking_cost or 'Calculating...' }}</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header">Recent Reservations</div>
+    <ul class="list-group list-group-flush">
+      {% for res in past_res %}
+        <li class="list-group-item">
+          <strong>{{ res.spot.lot.prime_location_name }}</strong> — Spot #{{ res.spot.spot_number }}<br>
+          <small>
+            {{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}
+            {% if res.leaving_timestamp %}
+              → {{ res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
+            {% endif %}
+            — ₹{{ res.parking_cost or '—' }}
+          </small>
+        </li>
+      {% else %}
+        <li class="list-group-item text-muted">No past reservations yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+<script>
+  window.lotData = JSON.parse(`{{ lots | tojson | safe }}`);
+</script>
+<script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+{% endblock %}

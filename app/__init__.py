@@ -2,7 +2,7 @@ from flask import Flask, render_template, url_for, session
 import os
 from dotenv import load_dotenv
 from flask_wtf import CSRFProtect
-from app.routes import route_handler, auth_bp, admin_bp
+from app.routes import route_handler, auth_bp, admin_bp, user_bp
 from app.config import Config
 from app.extensions import db, login_manager, migrate, bcrypt
 from app.models import *
@@ -17,6 +17,7 @@ def create_app():
     app.config.from_object(Config) # Loads the settings (like SECRET_KEY and database URL) from the Config class in my config.py set FLASK_APP=run.py
     app.register_blueprint(auth_bp) # Register the authentication blueprint (handles login, register, logout routes)
     app.register_blueprint(admin_bp) # Register the Admin Blueprint to load admin dashboard
+    app.register_blueprint(user_bp) # Register the User Blueprint to load User Dashboard
     
     db.init_app(app) # Initialzes SQLAlchemy
     login_manager.init_app(app) # Initializes the LoginManager from flask_login

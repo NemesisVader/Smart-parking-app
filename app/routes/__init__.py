@@ -1,5 +1,6 @@
 from app.routes.auth import *
 from app.routes.admin import *
+from app.routes.user import *
 from flask import render_template
 
 def route_handler(app, db):
