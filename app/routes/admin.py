@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from app.models import ParkingLot, ParkingSpot, Reservation
 from app.forms.LotForm import LotForm
 from app.extensions import db
-from sqlalchemy import func
+from sqlalchemy import func, cast, Date
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -170,6 +170,7 @@ def lot_analytics(lot_id):
 def lot_analytics_data(lot_id):
     lot = ParkingLot.query.get_or_404(lot_id)
 
+    # Revenue: sum of parking_cost for completed reservations
     revenue = (
         db.session.query(db.func.sum(Reservation.parking_cost))
         .join(ParkingSpot)
@@ -177,15 +178,26 @@ def lot_analytics_data(lot_id):
         .scalar() or 0
     )
 
-    total_spots = lot.num_spots
-    occupied = (
-        ParkingSpot.query
-        .filter_by(lot_id=lot.id, status='O')
-        .count()
-    )
+    # Occupancy: number of spots currently reserved/occupied
+    occupied = ParkingSpot.query.filter(
+        ParkingSpot.lot_id == lot.id,
+        ParkingSpot.status != 'A'  # not available => occupied
+    ).count()
 
     return jsonify({
-        "revenue": [{"lot": lot.prime_location_name, "revenue": revenue}],
-        "occupancy": [{"lot": lot.prime_location_name, "occupied": occupied, "total": total_spots}]
+        "revenue": [
+            {
+                "lot": lot.prime_location_name,
+                "revenue": revenue
+            }
+        ],
+        "occupancy": [
+            {
+                "lot": lot.prime_location_name,
+                "occupied": occupied,
+                "total": lot.num_spots
+            }
+        ]
     })
+
 #Code Ends here

@@ -2,69 +2,187 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
+<style>
+  .spot-btn-booked {
+    background-color: #dc3545 !important;
+    /* Bootstrap red */
+    color: white;
+    position: relative;
+  }
+
+  .spot-btn-booked::after {
+    content: "Booked";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2px 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .spot-btn-booked:hover::after {
+    opacity: 1;
+  }
+</style>
+
 <div class="container py-4">
+  <h2 class="mb-4">Welcome, {{ user.email }}</h2>
+
+  {% if active_res %}
   <div class="mb-4">
-    <h2>Welcome, {{ user.name or user.email }}</h2>
-    <p class="text-muted">Find and reserve parking in seconds.</p>
-  </div>
-
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <!-- Search -->
-      <form class="mb-3">
-        <input type="text" id="searchInput" class="form-control" placeholder="Search by name or location">
-      </form>
-      <div id="lotList" class="list-group">
-        <!-- Nearby lots will be injected here -->
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div id="map" style="height: 500px; width: 100%; border: 1px solid #ccc;"></div>
-    </div>
-  </div>
-
-  <div class="mb-4">
-    {% if active_res %}
-      <div class="card border-success mb-3">
-        <div class="card-header bg-success text-white">Current Reservation</div>
-        <div class="card-body">
-          <p><strong>Lot:</strong> {{ active_res.spot.lot.prime_location_name }}</p>
-          <p><strong>Spot:</strong> #{{ active_res.spot.spot_number }}</p>
-          <p><strong>Start Time:</strong> {{ active_res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-          {% if active_res.leaving_timestamp %}
-            <p><strong>End Time:</strong> {{ active_res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-          {% endif %}
-          <p><strong>Cost:</strong> ₹{{ active_res.parking_cost or 'Calculating...' }}</p>
+    <h5>Active Reservations</h5>
+    <div class="row g-3">
+      {% for res in active_res %}
+      <div class="col-md-6">
+        <div class="alert alert-success d-flex flex-column h-100">
+          <div>
+            <strong>Spot #{{ res.spot.spot_number }}</strong> at {{ res.spot.lot.prime_location_name }}<br>
+            since {{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}
+          </div>
+          <form method="POST" action="{{ url_for('user.complete_reservation') }}" class="mt-2">
+            <input type="hidden" name="reservation_id" value="{{ res.id }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm mt-auto">
+              End Reservation
+            </button>
+          </form>
         </div>
       </div>
-    {% endif %}
-  </div>
-
-  <div class="card">
-    <div class="card-header">Recent Reservations</div>
-    <ul class="list-group list-group-flush">
-      {% for res in past_res %}
-        <li class="list-group-item">
-          <strong>{{ res.spot.lot.prime_location_name }}</strong> — Spot #{{ res.spot.spot_number }}<br>
-          <small>
-            {{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}
-            {% if res.leaving_timestamp %}
-              → {{ res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
-            {% endif %}
-            — ₹{{ res.parking_cost or '—' }}
-          </small>
-        </li>
-      {% else %}
-        <li class="list-group-item text-muted">No past reservations yet.</li>
       {% endfor %}
-    </ul>
+    </div>
   </div>
-</div>
+  {% endif %}
 
-<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
-<script>
-  window.lotData = JSON.parse(`{{ lots | tojson | safe }}`);
-</script>
-<script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+  <h4 class="mt-4">Available Parking Lots</h4>
+  <div class="row">
+    {% for lot in lots %}
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{{ lot.location_name }}</h5>
+          <p class="card-text mb-1">{{ lot.address }} — {{ lot.pincode }}</p>
+          <p class="card-text text-muted">₹{{ lot.price }} per hour</p>
+          {% set avail = lot.spots | selectattr('status', 'equalto', 'A') | list | length %}
+          <p class="mt-auto">
+            <span class="badge bg-{{ 'success' if avail > 0 else 'danger' }}">
+              {{ avail }}/{{ lot.num_spots }} spots
+            </span>
+          </p>
+          <button class="btn btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#lotModal{{ lot.id }}">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="lotModal{{ lot.id }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ lot.location_name }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Address:</strong> {{ lot.address }} — {{ lot.pincode }}</p>
+            <p><strong>Rate:</strong> ₹{{ lot.price }} per hour</p>
+
+            <h6 class="mt-3">Spots</h6>
+            <div class="row g-2">
+              {% for spot in lot.spots %}
+              <div class="col-3">
+                <button class="btn btn-sm w-100 {{ 'btn-success' if spot.status == 'A' else 'btn-secondary' }}"
+                  disabled>
+                  {{ spot.spot_number }}
+                </button>
+              </div>
+              {% endfor %}
+            </div>
+
+            {% if lot.spots | selectattr('status', 'equalto', 'A') | list | length > 0 %}
+            <form method="POST" action="{{ url_for('user.reserve_spot') }}" class="mt-4">
+              <input type="hidden" name="lot_id" value="{{ lot.id }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-primary">Reserve a Spot</button>
+            </form>
+            {% else %}
+            <p class="mt-4 text-danger">No spots available right now.</p>
+            {% endif %}
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endfor %}
+  </div>
+
+  <h4 class="mt-5">Recent Reservations</h4>
+  <ul class="list-group">
+    {% if past_res %}
+    {% for res in past_res %}
+    <li class="list-group-item">
+      Spot #{{ res.spot.spot_number }} at {{ res.spot.lot.prime_location_name }}
+      on {{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}
+      <span class="badge float-end bg-{{ 
+              'success' if res.status == 'completed' else
+              'warning' if res.status == 'active' else
+              'danger' }}">
+        {{ res.status | capitalize }}
+      </span>
+      <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal"
+        data-bs-target="#billModal{{ res.id }}">
+        View Bill
+      </button>
+
+      <div class="modal fade" id="billModal{{ res.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Reservation Bill</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Lot:</strong> {{ res.spot.lot.prime_location_name }}</p>
+              <p><strong>Address:</strong> {{ res.spot.lot.address }}, {{ res.spot.lot.pincode }}</p>
+              <p><strong>Spot:</strong> #{{ res.spot.spot_number }}</p>
+              <p><strong>Start:</strong> {{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+              <p><strong>End:</strong>
+                {% if res.leaving_timestamp %}
+                {{ res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
+                {% else %}
+                Ongoing
+                {% endif %}
+              </p>
+              {% if res.leaving_timestamp %}
+              {% set duration_seconds = (res.leaving_timestamp - res.parking_timestamp).total_seconds() %}
+              {% set duration_hours = duration_seconds / 3600 %}
+              {% set total_cost = (duration_hours * res.spot.lot.price_per_hour) | round(2) %}
+              <p><strong>Duration:</strong>
+                {{ (duration_seconds // 3600)|int }}h
+                {{ ((duration_seconds % 3600) // 60)|int }}m
+                {{ (duration_seconds % 60)|round }}s
+              </p>
+              <p><strong>Rate:</strong> ₹{{ res.spot.lot.price_per_hour }} per hour</p>
+              <hr>
+              <p><strong>Total Cost:</strong> ₹{{ total_cost }}</p>
+              {% else %}
+              <p class="text-muted">Bill will be available after completion.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+    {% else %}
+    <li class="list-group-item text-muted">No past reservations yet.</li>
+    {% endif %}
+  </ul>
+</div>
 {% endblock %}

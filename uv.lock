@@ -791,6 +791,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "python-dotenv" },
+    { name = "pytz" },
     { name = "qrcode", extra = ["pil"] },
     { name = "requests" },
 ]
@@ -811,6 +812,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.2.6" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
+    { name = "pytz", specifier = ">=2025.2" },
     { name = "qrcode", extras = ["pil"], specifier = ">=8.2" },
     { name = "requests", specifier = ">=2.32.4" },
 ]
