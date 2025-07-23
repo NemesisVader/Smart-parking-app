@@ -22,7 +22,7 @@ def user_dashboard():
             Reservation.user_id == current_user.id,
             Reservation.status != 'active'
         )
-        .order_by(Reservation.parking_timestamp.asc())
+        .order_by(Reservation.parking_timestamp.desc())
         .limit(5)
         .all()
     )

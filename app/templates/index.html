@@ -3,123 +3,101 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="container-fluid bg-light py-5">
-  <div class="row justify-content-center align-items-center">
-    <div class="col-md-6 text-center">
-      <h1 class="display-4 fw-bold">Smart Parking App</h1>
-      <p class="lead mt-3">
-        Effortlessly find and reserve 4-wheeler parking spots in your area. 
-        Manage multiple parking lots, view availability in real time, and simplify your parking experience.
-      </p>
-      {% if not current_user.is_authenticated %}
-      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
-      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg">Login</a>
-      {% else %}
-      <a href="{{ url_for('user.dashboard') if not current_user.is_admin else url_for('admin.dashboard') }}"
-         class="btn btn-primary btn-lg">Go to Dashboard</a>
-      {% endif %}
-    </div>
-    <div class="col-md-6 text-center">
-      <img src="{{ url_for('static', filename='images/parking-hero.svg') }}" alt="Parking illustration"
-           class="img-fluid" style="max-height: 350px;">
+<section class="bg-light py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h1 class="display-5 fw-bold">Smart Parking App</h1>
+        <p class="lead mt-3">
+          Effortlessly find and reserve parking spots near you. Manage multiple parking lots, view real-time availability, and simplify your parking experience.
+        </p>
+        {% if not current_user.is_authenticated %}
+          <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg">Login</a>
+        {% else %}
+          <a href="{{ url_for('user.dashboard') if not current_user.is_admin else url_for('admin.dashboard') }}"
+             class="btn btn-primary btn-lg">Go to Dashboard</a>
+        {% endif %}
+      </div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- Features Section -->
-<div class="container py-5">
-  <div class="row text-center mb-4">
-    <div class="col">
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
       <h2 class="fw-bold">Why Choose Smart Parking?</h2>
-      <p class="text-muted">Key features to make your parking hassle-free.</p>
+      <p class="text-muted">Built to make parking management efficient and user-friendly.</p>
     </div>
-  </div>
-  <div class="row g-4">
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body text-center">
-          <i class="bi bi-building fs-1 text-primary"></i>
-          <h5 class="card-title mt-3">Multiple Parking Lots</h5>
-          <p class="card-text text-muted">
-            Admins can create and manage multiple lots with variable spot counts and pricing.
-          </p>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center px-4 py-5">
+            <h5 class="card-title mb-3">Multiple Parking Lots</h5>
+            <p class="card-text text-muted">
+              Manage multiple parking lots with custom spot configurations and pricing models.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body text-center">
-          <i class="bi bi-car-front fs-1 text-success"></i>
-          <h5 class="card-title mt-3">Instant Reservations</h5>
-          <p class="card-text text-muted">
-            Users can book the first available spot with one click—no more circling the lot.
-          </p>
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center px-4 py-5">
+            <h5 class="card-title mb-3">Instant Reservations</h5>
+            <p class="card-text text-muted">
+              Users can reserve the next available spot with a single click—no manual selection required.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body text-center">
-          <i class="bi bi-graph-up-arrow fs-1 text-warning"></i>
-          <h5 class="card-title mt-3">Real-Time Status</h5>
-          <p class="card-text text-muted">
-            Admin dashboard shows live availability, occupancy, and usage analytics.
-          </p>
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center px-4 py-5">
+            <h5 class="card-title mb-3">Live Status & Analytics</h5>
+            <p class="card-text text-muted">
+              Track occupancy, availability, and usage trends through the admin dashboard.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- How It Works Section -->
-<div class="container-fluid bg-light py-5">
+<section class="bg-light py-5">
   <div class="container">
-    <div class="row text-center mb-4">
-      <div class="col">
-        <h2 class="fw-bold">How It Works</h2>
-        <p class="text-muted">Three simple steps to park with ease.</p>
-      </div>
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">How It Works</h2>
+      <p class="text-muted">A simple 3-step process to start parking smart.</p>
     </div>
-    <div class="row g-4 align-items-start">
+    <div class="row g-4">
       <div class="col-md-4">
-        <div class="text-center">
-          <i class="bi bi-person-plus fs-1 text-primary"></i>
-          <h5 class="mt-3">1. Register or Login</h5>
+        <div class="p-4 bg-white h-100 shadow-sm rounded text-center">
+          <h5 class="mb-2">1. Register or Login</h5>
           <p class="text-muted">
-            Create an account or sign in to start reserving parking spots instantly.
+            Create an account or log in to get access to real-time parking availability and reservations.
           </p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="text-center">
-          <i class="bi bi-map fs-1 text-success"></i>
-          <h5 class="mt-3">2. Choose a Lot</h5>
+        <div class="p-4 bg-white h-100 shadow-sm rounded text-center">
+          <h5 class="mb-2">2. Choose a Lot</h5>
           <p class="text-muted">
-            Browse available parking lots, view pricing, and select the nearest location.
+            Browse available lots by location, pricing, and availability.
           </p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="text-center">
-          <i class="bi bi-check-circle fs-1 text-warning"></i>
-          <h5 class="mt-3">3. Reserve & Park</h5>
+        <div class="p-4 bg-white h-100 shadow-sm rounded text-center">
+          <h5 class="mb-2">3. Reserve & Park</h5>
           <p class="text-muted">
-            Reserve the first available spot, park your vehicle, and mark it released when you leave.
+            Confirm your spot, follow directions to the lot, and park without delays or manual selection.
           </p>
         </div>
       </div>
     </div>
   </div>
-</div>
-
-<!-- Footer -->
-<footer class="bg-dark text-light py-4">
-  <div class="container text-center">
-    <p class="mb-1">&copy; {{ current_year }} Smart Parking App. All rights reserved.</p>
-    <small>
-      <a href="#" class="text-decoration-none text-light me-3">Privacy Policy</a>
-      <a href="#" class="text-decoration-none text-light">Terms of Service</a>
-    </small>
-  </div>
-</footer>
+</section>
 {% endblock %}
