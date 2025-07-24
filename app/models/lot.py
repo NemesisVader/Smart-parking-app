@@ -1,4 +1,6 @@
 from app.extensions import db
+from app.models.reservation import Reservation
+from app.models.spot import ParkingSpot
 from datetime import datetime, timezone
 
 
@@ -18,5 +20,13 @@ class ParkingLot(db.Model):
 
     def __repr__(self):
         return self.__str__()
+    
+    @property
+    def has_active_reservations(self):
+        # any active reservation on any spot in this lot?
+        return db.session.query(Reservation).join(ParkingSpot) \
+            .filter(ParkingSpot.lot_id == self.id,
+                    Reservation.status == 'active') \
+            .count() > 0
     
 #Code ends here

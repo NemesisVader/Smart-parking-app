@@ -81,9 +81,16 @@
                 This action cannot be undone.
               </div>
               <div class="modal-footer">
-                <form method="POST" action="{{ url_for('admin.delete_lot', lot_id=lot.id) }}">
+                <form method="POST"
+                      action="{{ url_for('admin.delete_lot', lot_id=lot.id) }}"
+                      class="d-inline">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                  <button
+                    type="submit"
+                    class="btn btn-outline-danger flex-fill"
+                    {% if lot.has_active_reservations %}disabled{% endif %}>
+                    Delete
+                  </button>
                 </form>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               </div>

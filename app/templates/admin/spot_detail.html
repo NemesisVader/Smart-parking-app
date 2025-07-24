@@ -46,9 +46,20 @@
         <form method="POST" class="d-flex gap-2">
           <button type="submit" class="btn btn-outline-danger">Release Spot</button>
           <a href="{{ url_for('admin.dashboard') }}#spotsModal-{{ lot.id }}" class="btn btn-outline-secondary">Back to Lots</a>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         </form>
       {% else %}
-        <p class="text-muted">No active reservation on this spot.</p>
+      <p class="text-muted">No active reservation on this spot.</p>
+      <form method="POST"
+            action="{{ url_for('admin.delete_spot', lot_id=lot.id, spot_id=spot.id) }}"
+            class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit"
+                class="btn btn-outline-danger"
+                {% if spot.status == 'R' %}disabled{% endif %}>
+          Delete Spot
+        </button>
+      </form>
         <a href="{{ url_for('admin.dashboard') }}#spotsModal-{{ lot.id }}" class="btn btn-outline-secondary">Back to Lots</a>
       {% endif %}
     </div>

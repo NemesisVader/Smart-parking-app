@@ -100,15 +100,52 @@ def edit_lot(lot_id):
 @login_required
 def delete_lot(lot_id):
     if not current_user.is_admin:
-        flash("Unauthorized Entry", "danger")
+        flash("Unauthorized entry", "danger")
         return redirect(url_for('auth.login'))
 
     lot = ParkingLot.query.get_or_404(lot_id)
 
+    # Count active reservations on *any* spot in this lot:
+    active_count = (
+        Reservation.query
+        .join(ParkingSpot, Reservation.spot_id == ParkingSpot.id)
+        .filter(ParkingSpot.lot_id == lot.id,
+                Reservation.status == 'active')
+        .count()
+    )
+    if active_count:
+        flash("Cannot delete this lot—there are active reservations.", "danger")
+        return redirect(url_for('admin.dashboard'))
+
+    # Safe: delete spots then lot
+    for spot in lot.spots:
+        db.session.delete(spot)
     db.session.delete(lot)
     db.session.commit()
 
-    flash(f"Lot '{lot.prime_location_name}' has been deleted.", "success")
+    flash(f"Lot '{lot.prime_location_name}' deleted.", "success")
+    return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/admin/lots/<int:lot_id>/spots/<int:spot_id>/delete', methods=['POST'])
+@login_required
+def delete_spot(lot_id, spot_id):
+    if not current_user.is_admin:
+        flash("Unauthorized entry", "danger")
+        return redirect(url_for('auth.login'))
+
+    spot = ParkingSpot.query.get_or_404(spot_id)
+    lot = ParkingLot.query.get(lot_id)
+
+    # Is there an active reservation for this spot?
+    active = Reservation.query.filter_by(spot_id=spot.id, status='active').first()
+    if active:
+        flash("Cannot delete this spot—it has an active reservation.", "danger")
+        return redirect(url_for('admin.spot_detail', lot_id=lot_id, spot_id=spot_id))
+
+    db.session.delete(spot)
+    lot.num_spots = ParkingSpot.query.filter_by(lot_id=lot.id).count()
+    db.session.commit()
+    flash(f"Spot #{spot.spot_number} deleted.", "success")
     return redirect(url_for('admin.dashboard'))
 
 @admin_bp.route(
